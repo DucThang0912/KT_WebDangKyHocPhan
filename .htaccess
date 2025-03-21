@@ -1,0 +1,14 @@
+RewriteEngine On
+RewriteBase /KT/
+
+# Allow direct access to files in public directory
+RewriteCond %{REQUEST_URI} ^/KT/public/
+RewriteRule ^ - [L]
+
+# Skip existing files and directories
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Rewrite URLs
+RewriteRule ^([^/]+)/([^/]+)/?$ index.php?controller=$1&action=$2 [QSA,L]
+RewriteRule ^([^/]+)/([^/]+)/([^/]+)/?$ index.php?controller=$1&action=$2&id=$3 [QSA,L]
