@@ -11,78 +11,97 @@ class DangKyController {
     }
 
     public function index() {
-        $query = "SELECT dk.*, sv.HoTen 
-                 FROM DangKy dk 
-                 LEFT JOIN SinhVien sv ON dk.MaSV = sv.MaSV";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
+        if (!isset($_SESSION['maSV'])) {
+            header("Location: index.php?controller=auth&action=login");
+            exit();
+        }
+
+        $maSV = $_SESSION['maSV'];
+        $registeredCourses = [];
+        $totalCredits = 0;
+
+        if (isset($_COOKIE['registered_courses_' . $maSV])) {
+            $registeredCourses = json_decode($_COOKIE['registered_courses_' . $maSV], true);
+            
+            // Get course details from database
+            $placeholders = str_repeat('?,', count($registeredCourses) - 1) . '?';
+            $query = "SELECT * FROM HocPhan WHERE MaHP IN ($placeholders)";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute($registeredCourses);
+            $registeredCourses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Calculate total credits
+            foreach ($registeredCourses as $course) {
+                $totalCredits += $course['SoTinChi'];
+            }
+        }
         
         require_once __DIR__ . "/../views/dangky/index.php";
     }
 
-    public function create() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $maDK = $_POST['maDK'];
-            $ngayDK = $_POST['ngayDK'];
-            $maSV = $_POST['maSV'];
-
-            $query = "INSERT INTO DangKy(MaDK, NgayDK, MaSV) VALUES (?, ?, ?)";
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([$maDK, $ngayDK, $maSV]);
-
-            header("Location: index.php?controller=dangky&action=index");
-            exit();
+    private function getStudentId() {
+        if (isset($_SESSION['maSV'])) {
+            return $_SESSION['maSV'];
+        } else if (isset($_COOKIE['student_id'])) {
+            return $_COOKIE['student_id'];
         }
-        
-        require_once __DIR__ . "/../views/dangky/create.php";
+        return null;
     }
 
-    public function edit() {
-        $maDK = $_GET['id'];
-        
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $ngayDK = $_POST['ngayDK'];
-            $maSV = $_POST['maSV'];
-
-            $query = "UPDATE DangKy SET NgayDK = ?, MaSV = ? WHERE MaDK = ?";
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([$ngayDK, $maSV, $maDK]);
-
-            header("Location: index.php?controller=dangky&action=index");
+    public function registerCourse() {
+        $maSV = $this->getStudentId();
+        if (!$maSV) {
+            header("Location: index.php?controller=auth&action=login");
             exit();
         }
 
-        $query = "SELECT * FROM DangKy WHERE MaDK = ?";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute([$maDK]);
-        $dangky = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        require_once __DIR__ . "/../views/dangky/edit.php";
-    }
+        $maHP = $_GET['maHP'];
 
-    public function delete() {
-        $maDK = $_GET['id'];
-        
-        $query = "DELETE FROM DangKy WHERE MaDK = ?";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute([$maDK]);
+        // Get existing registered courses
+        $registeredCourses = isset($_COOKIE['registered_courses_' . $maSV]) 
+            ? json_decode($_COOKIE['registered_courses_' . $maSV], true) 
+            : [];
 
-        header("Location: index.php?controller=dangky&action=index");
+        // Check if course is already registered
+        if (!in_array($maHP, $registeredCourses)) {
+            $registeredCourses[] = $maHP;
+            setcookie(
+                'registered_courses_' . $maSV, 
+                json_encode($registeredCourses), 
+                time() + (86400 * 30), // 30 days
+                '/'
+            );
+        }
+
+        header("Location: index.php?controller=hocphan&action=index");
         exit();
     }
 
-    public function detail() {
-        $maDK = $_GET['id'];
-        
-        $query = "SELECT dk.*, sv.HoTen 
-                 FROM DangKy dk 
-                 LEFT JOIN SinhVien sv ON dk.MaSV = sv.MaSV 
-                 WHERE dk.MaDK = ?";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute([$maDK]);
-        $dangky = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        require_once __DIR__ . "/../views/dangky/detail.php";
+    public function removeCourse() {
+        if (!isset($_SESSION['maSV'])) {
+            header("Location: index.php?controller=auth&action=login");
+            exit();
+        }
+
+        $maHP = $_GET['maHP'];
+        $maSV = $_SESSION['maSV'];
+
+        if (isset($_COOKIE['registered_courses_' . $maSV])) {
+            $registeredCourses = json_decode($_COOKIE['registered_courses_' . $maSV], true);
+            
+            // Remove the course
+            $registeredCourses = array_diff($registeredCourses, [$maHP]);
+            
+            setcookie(
+                'registered_courses_' . $maSV, 
+                json_encode(array_values($registeredCourses)), 
+                time() + (86400 * 30), 
+                '/'
+            );
+        }
+
+        header("Location: index.php?controller=dangky&action=index");
+        exit();
     }
 }
 ?>

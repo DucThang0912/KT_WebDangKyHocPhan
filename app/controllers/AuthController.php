@@ -20,6 +20,15 @@ class AuthController {
                 session_start();
                 $_SESSION['maSV'] = $student['MaSV'];
                 $_SESSION['hoTen'] = $student['HoTen'];
+                
+                // Set cookie for student ID
+                setcookie(
+                    'student_id', 
+                    $student['MaSV'], 
+                    time() + (86400 * 30), // 30 days
+                    '/'
+                );
+
                 header("Location: index.php?controller=sinhvien&action=index");
                 exit();
             } else {
@@ -33,6 +42,10 @@ class AuthController {
     public function logout() {
         session_start();
         session_destroy();
+        
+        // Remove the cookie when logging out
+        setcookie('student_id', '', time() - 3600, '/');
+        
         header("Location: index.php?controller=auth&action=login");
         exit();
     }

@@ -30,7 +30,7 @@
                 <label>Hình:</label>
                 <?php if($sinhvien['Hinh']) { ?>
                     <div class="mb-2">
-                        <img src="/KT/<?php echo $sinhvien['Hinh']; ?>" class="img-thumbnail" width="100">
+                        <img src="/KT_WebDangKyHocPhan/<?php echo $sinhvien['Hinh']; ?>" class="img-thumbnail" width="100">
                     </div>
                 <?php } ?>
                 <input type="file" name="hinh" class="form-control">

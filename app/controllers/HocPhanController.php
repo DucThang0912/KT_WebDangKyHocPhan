@@ -9,7 +9,16 @@ class HocPhanController {
         $this->db = $database->getConnection();
     }
 
+    private function isAuthenticated() {
+        return isset($_SESSION['maSV']) || isset($_COOKIE['student_id']);
+    }
+
     public function index() {
+        if (!$this->isAuthenticated()) {
+            header("Location: index.php?controller=auth&action=login");
+            exit();
+        }
+        
         $query = "SELECT * FROM HocPhan";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
@@ -27,7 +36,7 @@ class HocPhanController {
             $stmt = $this->db->prepare($query);
             $stmt->execute([$maHP, $tenHP, $soTinChi]);
 
-            header("Location: /KT/hocphan/index");
+            header("Location: /KT_WebDangKyHocPhan/hocphan/index");
             exit();
         }
         

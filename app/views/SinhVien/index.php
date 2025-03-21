@@ -2,7 +2,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Danh sách sinh viên</h2>
-    <a href="http://localhost/KT/index.php?controller=sinhvien&action=create" class="btn btn-primary">Thêm mới</a>
+    <a href="http://localhost/KT_WebDangKyHocPhan/index.php?controller=sinhvien&action=create" class="btn btn-primary">Thêm mới</a>
 </div>
 
 <div class="table-responsive">
@@ -28,13 +28,13 @@
                 <td><?php echo $row['TenNganh']; ?></td>
                 <td>
                     <?php if($row['Hinh']) { ?>
-                        <img src="/KT/<?php echo $row['Hinh']; ?>" class="img-thumbnail" width="80">
+                        <img src="/KT_WebDangKyHocPhan/<?php echo $row['Hinh']; ?>" class="img-thumbnail" width="80">
                     <?php } ?>
                 </td>
                 <td>
-                    <a href="http://localhost/KT/index.php?controller=sinhvien&action=detail&id=<?php echo $row['MaSV']; ?>" class="btn btn-info btn-sm">Chi tiết</a>
-                    <a href="http://localhost/KT/index.php?controller=sinhvien&action=edit&id=<?php echo $row['MaSV']; ?>" class="btn btn-warning btn-sm">Sửa</a>
-                    <a href="http://localhost/KT/index.php?controller=sinhvien&action=confirmDelete&id=<?php echo $row['MaSV']; ?>" class="btn btn-danger btn-sm">Xóa</a>
+                    <a href="http://localhost/KT_WebDangKyHocPhan/index.php?controller=sinhvien&action=detail&id=<?php echo $row['MaSV']; ?>" class="btn btn-info btn-sm">Chi tiết</a>
+                    <a href="http://localhost/KT_WebDangKyHocPhan/index.php?controller=sinhvien&action=edit&id=<?php echo $row['MaSV']; ?>" class="btn btn-warning btn-sm">Sửa</a>
+                    <a href="http://localhost/KT_WebDangKyHocPhan/index.php?controller=sinhvien&action=confirmDelete&id=<?php echo $row['MaSV']; ?>" class="btn btn-danger btn-sm">Xóa</a>
                 </td>
             </tr>
             <?php } ?>

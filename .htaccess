@@ -1,8 +1,8 @@
 RewriteEngine On
-RewriteBase /KT/
+RewriteBase /KT_WebDangKyHocPhan/
 
 # Allow direct access to files in public directory
-RewriteCond %{REQUEST_URI} ^/KT/public/
+RewriteCond %{REQUEST_URI} ^/KT_WebDangKyHocPhan/public/
 RewriteRule ^ - [L]
 
 # Skip existing files and directories

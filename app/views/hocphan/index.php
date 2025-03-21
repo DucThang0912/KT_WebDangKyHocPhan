@@ -21,8 +21,12 @@
                 <td><?php echo $row['TenHP']; ?></td>
                 <td><?php echo $row['SoTinChi']; ?></td>
                 <td>
-                    <a href="?controller=dangky&action=create&maHP=<?php echo $row['MaHP']; ?>" 
-                       class="btn btn-success btn-sm">Đăng ký</a>
+                    <?php if(isset($_SESSION['maSV']) || isset($_COOKIE['student_id'])) { ?>
+                        <a href="?controller=dangky&action=registerCourse&maHP=<?php echo $row['MaHP']; ?>" 
+                           class="btn btn-success btn-sm">Đăng ký</a>
+                    <?php } else { ?>
+                        <a href="?controller=auth&action=login" class="btn btn-secondary btn-sm">Đăng nhập để đăng ký</a>
+                    <?php } ?>
                 </td>
             </tr>
             <?php } ?>

@@ -22,7 +22,7 @@
                 <div class="col-md-4">
                     <?php if($sinhvien['Hinh']) { ?>
                         <div class="text-center">
-                            <img src="/KT/<?php echo $sinhvien['Hinh']; ?>" class="img-fluid rounded">
+                            <img src="/KT_WebDangKyHocPhan/<?php echo $sinhvien['Hinh']; ?>" class="img-fluid rounded">
                         </div>
                     <?php } ?>
                 </div>
