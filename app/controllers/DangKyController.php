@@ -11,30 +11,37 @@ class DangKyController {
     }
 
     public function index() {
-        if (!isset($_SESSION['maSV'])) {
+        if (!isset($_SESSION['maSV']) && !isset($_COOKIE['student_id'])) {
             header("Location: index.php?controller=auth&action=login");
             exit();
         }
 
-        $maSV = $_SESSION['maSV'];
+        $maSV = isset($_SESSION['maSV']) ? $_SESSION['maSV'] : $_COOKIE['student_id'];
         $registeredCourses = [];
         $totalCredits = 0;
+        $totalCourses = 0;
 
         if (isset($_COOKIE['registered_courses_' . $maSV])) {
-            $registeredCourses = json_decode($_COOKIE['registered_courses_' . $maSV], true);
+            $registeredCoursesIds = json_decode($_COOKIE['registered_courses_' . $maSV], true);
             
-            // Get course details from database
-            $placeholders = str_repeat('?,', count($registeredCourses) - 1) . '?';
-            $query = "SELECT * FROM HocPhan WHERE MaHP IN ($placeholders)";
-            $stmt = $this->db->prepare($query);
-            $stmt->execute($registeredCourses);
-            $registeredCourses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (!empty($registeredCoursesIds)) {
+                // Get course details from database
+                $placeholders = str_repeat('?,', count($registeredCoursesIds) - 1) . '?';
+                $query = "SELECT * FROM HocPhan WHERE MaHP IN ($placeholders)";
+                $stmt = $this->db->prepare($query);
+                $stmt->execute($registeredCoursesIds);
+                $registeredCourses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Calculate total credits
-            foreach ($registeredCourses as $course) {
-                $totalCredits += $course['SoTinChi'];
+                // Calculate totals
+                $totalCourses = count($registeredCourses);
+                foreach ($registeredCourses as $course) {
+                    $totalCredits += $course['SoTinChi'];
+                }
             }
         }
+        
+        $success = isset($_GET['success']) ? $_GET['success'] : null;
+        $error = isset($_GET['error']) ? $_GET['error'] : null;
         
         require_once __DIR__ . "/../views/dangky/index.php";
     }
@@ -98,6 +105,57 @@ class DangKyController {
                 time() + (86400 * 30), 
                 '/'
             );
+        }
+
+        header("Location: index.php?controller=dangky&action=index");
+        exit();
+    }
+
+    public function saveRegistration() {
+        $maSV = $this->getStudentId();
+        if (!$maSV) {
+            header("Location: index.php?controller=auth&action=login");
+            exit();
+        }
+
+        if (isset($_COOKIE['registered_courses_' . $maSV])) {
+            $registeredCourses = json_decode($_COOKIE['registered_courses_' . $maSV], true);
+            
+            if (!empty($registeredCourses)) {
+                try {
+                    $this->db->beginTransaction();
+
+                    // Insert into DangKy table
+                    $queryDangKy = "INSERT INTO DangKy (NgayDK, MaSV) VALUES (NOW(), ?)";
+                    $stmtDangKy = $this->db->prepare($queryDangKy);
+                    $stmtDangKy->execute([$maSV]);
+                    
+                    $maDK = $this->db->lastInsertId();
+
+                    // Insert into ChiTietDangKy table
+                    $queryChiTiet = "INSERT INTO ChiTietDangKy (MaDK, MaHP) VALUES (?, ?)";
+                    $stmtChiTiet = $this->db->prepare($queryChiTiet);
+                    
+                    foreach ($registeredCourses as $maHP) {
+                        $stmtChiTiet->execute([$maDK, $maHP]);
+                    }
+
+                    $this->db->commit();
+
+                    // Clear the cookie after successful save
+                    setcookie('registered_courses_' . $maSV, '', time() - 3600, '/');
+
+                    // Redirect with success message
+                    header("Location: index.php?controller=dangky&action=index&success=1");
+                    exit();
+
+                } catch (Exception $e) {
+                    $this->db->rollBack();
+                    // Redirect with error message
+                    header("Location: index.php?controller=dangky&action=index&error=1");
+                    exit();
+                }
+            }
         }
 
         header("Location: index.php?controller=dangky&action=index");
