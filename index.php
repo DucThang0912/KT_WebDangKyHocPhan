@@ -3,6 +3,7 @@ require_once "app/config/database.php";
 require_once "app/controllers/SinhVienController.php";
 require_once "app/controllers/HocPhanController.php";
 require_once "app/controllers/DangKyController.php";
+require_once "app/controllers/AuthController.php";
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'index';
 $controller = isset($_GET['controller']) ? $_GET['controller'] : 'SinhVien';

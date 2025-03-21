@@ -25,6 +25,24 @@
                         <a class="nav-link" href="index.php?controller=dangky&action=index">Đăng ký học phần</a>
                     </li>
                 </ul>
+                <ul class="navbar-nav ms-auto">
+                    <?php
+                    session_start();
+                    if (isset($_SESSION['maSV'])) { ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <?php echo $_SESSION['hoTen']; ?>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="index.php?controller=auth&action=logout">Đăng xuất</a></li>
+                            </ul>
+                        </li>
+                    <?php } else { ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.php?controller=auth&action=login">Đăng nhập</a>
+                        </li>
+                    <?php } ?>
+                </ul>
             </div>
         </div>
     </nav>
